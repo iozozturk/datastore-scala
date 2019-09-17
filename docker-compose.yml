@@ -4,7 +4,7 @@ services:
     image: singularities/datastore-emulator
     environment:
       DATASTORE_LISTEN_ADDRESS: 0.0.0.0:8081
-      DATASTORE_PROJECT_ID: virtual-power-plant-dev
+      DATASTORE_PROJECT_ID: ignore
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081"]
       interval: 3s
