@@ -8,7 +8,7 @@ class DatastoreRepository(datastoreGrpc: DatastoreGrpc)(implicit ec: ExecutionCo
 
   def insert[E <: BaseEntity : TypeTag : ClassTag](entity: E): Future[E] = {
     val datastoreEntity = instanceToDatastoreEntity[E](entity)
-    datastoreGrpc.save(datastoreEntity).map(_ => entity)
+    datastoreGrpc.insert(datastoreEntity).map(_ => entity)
   }
 
 

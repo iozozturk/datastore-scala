@@ -14,7 +14,7 @@ class DatastoreGrpc(val datastore: DatastoreHelper)(
   materializer: Materializer
 ) {
 
-  def save(entity: Entity): Future[CommitResponse] = {
+  def insert(entity: Entity): Future[CommitResponse] = {
     datastore.client
       .beginTransaction(BeginTransactionRequest(datastore.datastoreConfig.projectId))
       .flatMap { response =>
