@@ -21,12 +21,12 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
     CommitResponse(Seq(MutationResult(fixture.userEntity.key)))
   }
 
-  val datastoreRepositoryInTest = new DatastoreRepository(mockDatastoreGrpc)
+  val datastoreRepositoryInTest = new DatastoreRepository[fixture.User](mockDatastoreGrpc)
 
   "Datastore Repository" should {
 
     "save user via datastore grpc" in {
-      Await.result(datastoreRepositoryInTest.insert[fixture.User](fixture.user), 3.second) shouldEqual fixture.user
+      Await.result(datastoreRepositoryInTest.insert(fixture.user), 3.second) shouldEqual fixture.user
     }
   }
 

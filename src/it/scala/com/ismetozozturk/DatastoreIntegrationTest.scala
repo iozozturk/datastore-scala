@@ -24,16 +24,16 @@ class DatastoreIntegrationTest extends WordSpec with Matchers {
   private val datastoreGrpc = new DatastoreGrpc(datastoreHelper)
   private implicit val patience: PatienceConfiguration.Timeout = PatienceConfiguration.Timeout(Span(3, Seconds))
 
-  private val repositoryInTest = new DatastoreRepository(datastoreGrpc)
+  private val repositoryInTest = new DatastoreRepository[fixture.User](datastoreGrpc)
 
   "Datastore repository" should {
 
     "insert user entity in datastore" in {
-      Await.result(repositoryInTest.insert[fixture.User](fixture.user), 3.second) shouldEqual fixture.user
+      Await.result(repositoryInTest.insert(fixture.user), 3.second) shouldEqual fixture.user
     }
 
     "insert many user entities in datastore" in {
-      Await.result(repositoryInTest.insertMany[fixture.User](Seq(fixture.user1, fixture.user2)), 3.second) shouldEqual Seq(
+      Await.result(repositoryInTest.insertMany(Seq(fixture.user1, fixture.user2)), 3.second) shouldEqual Seq(
         fixture.user1,
         fixture.user2
       )
