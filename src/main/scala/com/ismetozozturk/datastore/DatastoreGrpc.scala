@@ -14,7 +14,7 @@ class DatastoreGrpc(val datastore: DatastoreHelper)(
   materializer: Materializer
 ) {
 
-  def insert(entity: Entity): Future[CommitResponse] = {
+  def insert(entities: Seq[Entity]): Future[CommitResponse] = {
     datastore.client
       .beginTransaction(BeginTransactionRequest(datastore.datastoreConfig.projectId))
       .flatMap { response =>
@@ -23,7 +23,7 @@ class DatastoreGrpc(val datastore: DatastoreHelper)(
             CommitRequest(
               datastore.datastoreConfig.projectId,
               transactionSelector = TransactionSelector.Transaction(response.transaction),
-              mutations = Seq(Mutation(Operation.Insert(entity)))
+              mutations = entities.map(e => Mutation(Operation.Insert(e)))
             )
           )
       }

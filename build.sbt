@@ -26,3 +26,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % "it,test",
   "org.mockito" % "mockito-core" % "3.0.0" % Test
 )
+
+resolvers += GCSResolver.forBucket("library.artifacts.newmotion.dev")
+
+publishTo := Some(GCSPublisher.forBucket("library.artifacts.newmotion.dev", AccessRights.InheritBucket))
