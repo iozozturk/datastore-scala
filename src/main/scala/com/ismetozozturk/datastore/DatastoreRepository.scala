@@ -34,18 +34,18 @@ class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: Dat
 
   def delete(entity: E): Future[Unit] = {
     val datastoreEntity = instanceToDatastoreEntity[E](entity)
-    datastoreGrpc.delete(Seq(datastoreEntity)).map(_ => Unit)
+    datastoreGrpc.delete(Seq(datastoreEntity)).map(_ => ())
   }
 
   def deleteMany(entities: Seq[E]): Future[Unit] = {
     val datastoreEntities = entities.map(instanceToDatastoreEntity[E])
-    datastoreGrpc.delete(datastoreEntities).map(_ => Unit)
+    datastoreGrpc.delete(datastoreEntities).map(_ => ())
   }
 
-//  def list(kind: String): Future[Seq[E]] = {
-//    datastoreGrpc.get(None, kind).map(datastoreEntityToInstance[E])
-//  }
-//
+  def list(kind: String): Future[Seq[E]] = {
+    datastoreGrpc.get(None, kind).map(entities => entities.map(datastoreEntityToInstance[E]))
+  }
+
 //  def get(id: String) = {
 //    val datastoreEntities = entities.map(instanceToDatastoreEntity[E])
 //    datastoreGrpc.update(datastoreEntities).map(_ => entities)

@@ -11,16 +11,16 @@ import org.scalatestplus.mockito.MockitoSugar
 
 import scala.collection.immutable.HashMap
 
+case class User(name: String, age: Int) extends BaseEntity {
+  override def id: Any = name
+
+  override def kind: String = "users"
+
+  override def excludeFromIndex: Boolean = false
+}
+
 class EntityResolverTest extends WordSpec with MockitoSugar with Matchers {
   private val entityResolverInTest = new EntityResolver {}
-
-  case class User(name: String, age: Int) extends BaseEntity {
-    override def id: Any = name
-
-    override def kind: String = "users"
-
-    override def excludeFromIndex: Boolean = false
-  }
 
   val user = User("ismet", 35)
 
@@ -29,7 +29,8 @@ class EntityResolverTest extends WordSpec with MockitoSugar with Matchers {
     "resolve runtime class" in {
       entityResolverInTest.extractRuntimeClass[User]() shouldEqual User("", 1).getClass
     }
-    "convert base entity to datastore entity" in {
+
+    "convert instance to datastore entity" in {
       entityResolverInTest.instanceToDatastoreEntity[User](user) shouldEqual
         Entity(
           Some(Key(path = Seq(PathElement(user.kind, IdType.Name(user.id.toString))))),
@@ -38,6 +39,18 @@ class EntityResolverTest extends WordSpec with MockitoSugar with Matchers {
             "age" -> Value().withIntegerValue(user.age)
           )
         )
+    }
+
+    "convert entity to instance" in {
+      entityResolverInTest.datastoreEntityToInstance[User](
+        Entity(
+          Some(Key(path = Seq(PathElement(user.kind, IdType.Name(user.id.toString))))),
+          HashMap(
+            "name" -> Value().withStringValue(user.name),
+            "age" -> Value().withIntegerValue(user.age)
+          )
+        )
+      ) shouldEqual user
     }
   }
 

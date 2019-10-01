@@ -1,5 +1,7 @@
 package com.ismetozozturk.datastore
 
+import java.sql.Blob
+import java.time.Instant
 import java.util.Date
 
 import com.google.`type`.LatLng
@@ -11,9 +13,9 @@ import com.google.datastore.v1.Value
 import com.google.protobuf.ByteString
 import com.google.protobuf.timestamp.Timestamp
 
-import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
 import scala.reflect.classTag
+import scala.reflect.runtime.universe._
 
 trait EntityResolver {
   private[datastore] def extractRuntimeClass[E: ClassTag](): RuntimeClass = classTag[E].runtimeClass
@@ -56,6 +58,93 @@ trait EntityResolver {
       case otherId    => throw UnsupportedIdTypeException(otherId.getClass.getCanonicalName, kind)
     }
 
+  private[datastore] def datastoreEntityToInstance[E <: BaseEntity: TypeTag: ClassTag](entity: Entity): E = {
+    val clazz = extractRuntimeClass[E]()
+    val defaultInstance = createBlankInstance[E](clazz)
+    setInstanceValues(defaultInstance, entity)
+    defaultInstance.asInstanceOf[E]
+  }
+
+  private def setInstanceValues[T](blankInstance: T, entity: Entity)(implicit tt: TypeTag[T], ct: ClassTag[T]): Unit = {
+    tt.tpe.members collect {
+      case member if member.isMethod && member.asMethod.isCaseAccessor => member.asMethod
+    } foreach { member =>
+      val field = tt.mirror.reflect(blankInstance).reflectField(member)
+      val fieldClassName = member.returnType.typeSymbol.fullName
+      val fieldName = member.name.toString
+      val value = fieldClassName match {
+        case OptionClassName =>
+          if (!entity.properties.contains(fieldName) || entity.properties(fieldName).valueType.isNullValue) {
+            None
+          } else {
+            val genericClassName = member.returnType.typeArgs.head.typeSymbol.fullName
+            Some(extractValueFromEntity(genericClassName, fieldName, entity))
+          }
+        case className =>
+          extractValueFromEntity(className, fieldName, entity)
+      }
+      field.set(value)
+    }
+  }
+
+  private def extractValueFromEntity(className: String, fieldName: String, entity: Entity): Any = {
+    className match {
+      case IntClassName     => entity.properties(fieldName).getIntegerValue.toInt
+      case LongClassName    => entity.properties(fieldName).getIntegerValue
+      case StringClassName  => entity.properties(fieldName).getStringValue
+      case FloatClassName   => entity.properties(fieldName).getDoubleValue
+      case DoubleClassName  => entity.properties(fieldName).getDoubleValue
+      case BooleanClassName => entity.properties(fieldName).getBooleanValue
+      case JavaDateClassName =>
+        Date.from(Instant.ofEpochMilli(entity.properties(fieldName).getTimestampValue.nanos / 1000000))
+      case DatastoreLatLongClassName => entity.properties(fieldName).getGeoPointValue
+      case DatastoreBlobClassName    => entity.properties(fieldName).getBlobValue
+      case _                         => throw UnsupportedEntityFieldTypeException(className, fieldName)
+    }
+  }
+
+  private def createBlankInstance[E](clazz: Class[_]): E = {
+    val constructor = clazz.getConstructors.head
+    val params = constructor.getParameterTypes
+      .map(
+        paramClass =>
+          getClassName(paramClass) match {
+            case IntClassName              => Int.MinValue
+            case LongClassName             => 0L
+            case StringClassName           => ""
+            case FloatClassName            => 0.0F
+            case DoubleClassName           => 0.0
+            case BooleanClassName          => false
+            case JavaDateClassName         => new Date(0)
+            case DatastoreLatLongClassName => LatLng.of(0.0, 0.0)
+            case DatastoreBlobClassName    => ByteString.copyFrom(Array[Byte]())
+            case OptionClassName           => None
+            case _                         => null
+        }
+      )
+      .map(_.asInstanceOf[Object])
+    constructor.newInstance(params: _*).asInstanceOf[E]
+  }
+
+  private def getClassName[E: TypeTag]: String = {
+    typeOf[E].typeSymbol.fullName
+  }
+
+  protected def getClassName(clazz: Class[_]): String = {
+    runtimeMirror(clazz.getClassLoader).classSymbol(clazz).fullName
+  }
+
+  private val IntClassName = getClassName[Int]
+  private val LongClassName = getClassName[Long]
+  private val FloatClassName = getClassName[Float]
+  private val DoubleClassName = getClassName[Double]
+  private val StringClassName = getClassName[String]
+  private val JavaDateClassName = getClassName[Date]
+  private val BooleanClassName = getClassName[Boolean]
+  private val DatastoreLatLongClassName = getClassName[LatLng]
+  private val DatastoreBlobClassName = getClassName[Blob]
+  private val OptionClassName = getClassName[Option[_]]
+
 }
 
 case class UnsupportedFieldTypeException(fieldTypeName: String, fieldName: String)
@@ -64,4 +153,7 @@ case class UnsupportedFieldTypeException(fieldTypeName: String, fieldName: Strin
     )
 
 case class UnsupportedIdTypeException(idTypeName: String, kind: String)
+    extends RuntimeException(s"Fields of type $idTypeName not supported, kind: $kind")
+
+case class UnsupportedEntityFieldTypeException(idTypeName: String, kind: String)
     extends RuntimeException(s"Fields of type $idTypeName not supported, kind: $kind")
