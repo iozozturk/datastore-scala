@@ -42,10 +42,6 @@ class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: Dat
     datastoreGrpc.delete(datastoreEntities).map(_ => ())
   }
 
-  def list(kind: String): Future[Seq[E]] = {
-    datastoreGrpc.get(Seq(createKey(None, kind))).map(entities => entities.map(datastoreEntityToInstance[E]))
-  }
-
   def get(id: Any, kind: String): Future[Seq[E]] = {
     datastoreGrpc.get(Seq(createKey(Some(id), kind))).map(entities => entities.map(datastoreEntityToInstance[E]))
   }

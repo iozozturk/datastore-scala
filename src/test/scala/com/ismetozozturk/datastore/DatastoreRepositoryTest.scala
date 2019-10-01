@@ -62,10 +62,6 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
       Await.result(datastoreRepositoryInTest.deleteMany(Seq(repoFixture.user)), 3.second) shouldEqual ()
     }
 
-    "list objects" in {
-      Await.result(datastoreRepositoryInTest.list(repoFixture.user.kind), 3.second) shouldEqual Seq(repoFixture.user)
-    }
-
     "get objects" in {
       Await.result(datastoreRepositoryInTest.get(repoFixture.user.id, repoFixture.user.kind), 3.second) shouldEqual Seq(
         repoFixture.user
