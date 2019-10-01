@@ -10,7 +10,10 @@ import com.google.datastore.v1.CommitRequest
 import com.google.datastore.v1.CommitResponse
 import com.google.datastore.v1.DatastoreClient
 import com.google.datastore.v1.Entity
+import com.google.datastore.v1.EntityResult
 import com.google.datastore.v1.Key
+import com.google.datastore.v1.LookupRequest
+import com.google.datastore.v1.LookupResponse
 import com.google.datastore.v1.MutationResult
 import com.google.datastore.v1.Value
 import org.mockito.ArgumentMatchers.any
@@ -40,38 +43,58 @@ class DatastoreGrpcTest extends WordSpec with MockitoSugar with Matchers {
     BeginTransactionResponse()
   }
   when(mockDatastoreClient.commit(any[CommitRequest])) thenReturn Future {
-    CommitResponse(Seq(MutationResult(fixture.userEntity.key)))
+    CommitResponse(Seq(MutationResult(repoFixture.userEntity.key)))
+  }
+  when(mockDatastoreClient.lookup(any[LookupRequest])) thenReturn Future {
+    LookupResponse(found = Seq(EntityResult(Some(repoFixture.userEntity))))
   }
 
   private val datastoreGrpcInTest = new DatastoreGrpc(mockDatastoreHelper)
 
   "Datastore Grpc" should {
     "insert entity to datastore" in {
-      Await.result(datastoreGrpcInTest.insert(Seq(fixture.userEntity)), 3.second) shouldEqual CommitResponse(
-        Seq(MutationResult(fixture.userEntity.key))
+      Await.result(datastoreGrpcInTest.insert(Seq(grpcFixture.userEntity)), 3.second) shouldEqual CommitResponse(
+        Seq(MutationResult(repoFixture.userEntity.key))
       )
+    }
+
+    "update entity in datastore" in {
+      Await.result(datastoreGrpcInTest.update(Seq(grpcFixture.userEntity)), 3.second) shouldEqual CommitResponse(
+        Seq(MutationResult(repoFixture.userEntity.key))
+      )
+    }
+
+    "delete entity in datastore" in {
+      Await.result(datastoreGrpcInTest.delete(Seq(grpcFixture.userEntity)), 3.second) shouldEqual CommitResponse(
+        Seq(MutationResult(repoFixture.userEntity.key))
+      )
+    }
+
+    "get entity from datastore" in {
+      Await.result(datastoreGrpcInTest.get(Seq(grpcFixture.userKey)), 3.second) shouldEqual Seq(repoFixture.userEntity)
     }
   }
+}
 
-  object fixture {
+object grpcFixture {
 
-    case class User(name: String, age: Int) extends BaseEntity {
-      override def id: Any = name
+  case class User(name: String, age: Int) extends BaseEntity {
+    override def id: Any = name
 
-      override def kind: String = "users"
+    override def kind: String = "users"
 
-      override def excludeFromIndex: Boolean = false
-    }
+    override def excludeFromIndex: Boolean = false
+  }
 
-    val user = User("ismet", 35)
+  val user = User("ismet", 35)
 
-    val userEntity = Entity(
-      Some(Key(path = Seq(PathElement(user.kind, IdType.Name(user.id.toString))))),
-      HashMap(
-        "name" -> Value().withStringValue(user.name),
-        "age" -> Value().withIntegerValue(user.age)
-      )
+  val userKey = Key(path = Seq(PathElement(user.kind, IdType.Name(user.id.toString))))
+
+  val userEntity = Entity(
+    Some(userKey),
+    HashMap(
+      "name" -> Value().withStringValue(user.name),
+      "age" -> Value().withIntegerValue(user.age)
     )
-  }
-
+  )
 }

@@ -18,59 +18,63 @@ import scala.concurrent.Future
 class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
   private val mockDatastoreGrpc = mock[DatastoreGrpc]
   when(mockDatastoreGrpc.insert(any[Seq[Entity]])) thenReturn Future {
-    CommitResponse(Seq(MutationResult(fixture.userEntity.key)))
+    CommitResponse(Seq(MutationResult(repoFixture.userEntity.key)))
   }
   when(mockDatastoreGrpc.update(any[Seq[Entity]])) thenReturn Future {
-    CommitResponse(Seq(MutationResult(fixture.userEntity.key)))
+    CommitResponse(Seq(MutationResult(repoFixture.userEntity.key)))
   }
   when(mockDatastoreGrpc.delete(any[Seq[Entity]])) thenReturn Future {
-    CommitResponse(Seq(MutationResult(fixture.userEntity.key)))
+    CommitResponse(Seq(MutationResult(repoFixture.userEntity.key)))
   }
   when(mockDatastoreGrpc.get(any[Seq[Key]])) thenReturn Future {
-    Seq(fixture.userEntity)
+    Seq(repoFixture.userEntity)
   }
 
-  val datastoreRepositoryInTest = new DatastoreRepository[fixture.User](mockDatastoreGrpc)
+  val datastoreRepositoryInTest = new DatastoreRepository[repoFixture.User](mockDatastoreGrpc)
 
   "Datastore Repository" should {
 
     "save object" in {
-      Await.result(datastoreRepositoryInTest.insert(fixture.user), 3.second) shouldEqual fixture.user
+      Await.result(datastoreRepositoryInTest.insert(repoFixture.user), 3.second) shouldEqual repoFixture.user
     }
 
     "save many objects" in {
-      Await.result(datastoreRepositoryInTest.insertMany(Seq(fixture.user)), 3.second) shouldEqual Seq(fixture.user)
+      Await.result(datastoreRepositoryInTest.insertMany(Seq(repoFixture.user)), 3.second) shouldEqual Seq(
+        repoFixture.user
+      )
     }
 
     "update object" in {
-      Await.result(datastoreRepositoryInTest.update(fixture.user), 3.second) shouldEqual fixture.user
+      Await.result(datastoreRepositoryInTest.update(repoFixture.user), 3.second) shouldEqual repoFixture.user
     }
 
     "update many objects" in {
-      Await.result(datastoreRepositoryInTest.updateMany(Seq(fixture.user)), 3.second) shouldEqual Seq(fixture.user)
+      Await.result(datastoreRepositoryInTest.updateMany(Seq(repoFixture.user)), 3.second) shouldEqual Seq(
+        repoFixture.user
+      )
     }
 
     "delete object" in {
-      Await.result(datastoreRepositoryInTest.delete(fixture.user), 3.second) shouldEqual ()
+      Await.result(datastoreRepositoryInTest.delete(repoFixture.user), 3.second) shouldEqual ()
     }
 
     "delete many objects" in {
-      Await.result(datastoreRepositoryInTest.deleteMany(Seq(fixture.user)), 3.second) shouldEqual ()
+      Await.result(datastoreRepositoryInTest.deleteMany(Seq(repoFixture.user)), 3.second) shouldEqual ()
     }
 
     "list objects" in {
-      Await.result(datastoreRepositoryInTest.list(fixture.user.kind), 3.second) shouldEqual Seq(fixture.user)
+      Await.result(datastoreRepositoryInTest.list(repoFixture.user.kind), 3.second) shouldEqual Seq(repoFixture.user)
     }
 
     "get objects" in {
-      Await.result(datastoreRepositoryInTest.get(fixture.user.id, fixture.user.kind), 3.second) shouldEqual Seq(
-        fixture.user
+      Await.result(datastoreRepositoryInTest.get(repoFixture.user.id, repoFixture.user.kind), 3.second) shouldEqual Seq(
+        repoFixture.user
       )
     }
 
     "get many objects" in {
-      Await.result(datastoreRepositoryInTest.getMany(Seq(fixture.user.id), fixture.user.kind), 3.second) shouldEqual Seq(
-        fixture.user
+      Await.result(datastoreRepositoryInTest.getMany(Seq(repoFixture.user.id), repoFixture.user.kind), 3.second) shouldEqual Seq(
+        repoFixture.user
       )
     }
 
@@ -78,7 +82,7 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
 
 }
 
-object fixture {
+object repoFixture {
 
   case class User(name: String, age: Int) extends BaseEntity {
     override def id: Any = name
