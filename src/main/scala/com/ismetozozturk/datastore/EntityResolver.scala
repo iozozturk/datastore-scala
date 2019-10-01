@@ -30,7 +30,7 @@ trait EntityResolver {
         fieldToValueTuple(field.getName, field.get(classInstance))
       })
       .toMap
-    Entity(Some(createKey(classInstance.id, classInstance.kind)), entityValueMap)
+    Entity(Some(createKey(Some(classInstance.id), classInstance.kind)), entityValueMap)
   }
 
   private def fieldToValueTuple(fieldName: String, value: Any) = {
@@ -49,13 +49,14 @@ trait EntityResolver {
     }
   }
 
-  private[datastore] def createKey(id: Any, kind: String) =
+  private[datastore] def createKey(id: Option[Any], kind: String) =
     id match {
-      case id: String => Key(path = Seq(PathElement(kind, IdType.Name(id))))
-      case id: Long   => Key(path = Seq(PathElement(kind, IdType.Id(id))))
-      case id: Int    => Key(path = Seq(PathElement(kind, IdType.Id(id))))
-      case id: Key    => id
-      case otherId    => throw UnsupportedIdTypeException(otherId.getClass.getCanonicalName, kind)
+      case Some(id: String) => Key(path = Seq(PathElement(kind, IdType.Name(id))))
+      case Some(id: Long)   => Key(path = Seq(PathElement(kind, IdType.Id(id))))
+      case Some(id: Int)    => Key(path = Seq(PathElement(kind, IdType.Id(id))))
+      case Some(id: Key)    => id
+      case None             => Key(path = Seq(PathElement(kind, IdType.Empty)))
+      case otherId          => throw UnsupportedIdTypeException(otherId.getClass.getCanonicalName, kind)
     }
 
   private[datastore] def datastoreEntityToInstance[E <: BaseEntity: TypeTag: ClassTag](entity: Entity): E = {

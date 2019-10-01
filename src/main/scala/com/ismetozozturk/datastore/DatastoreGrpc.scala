@@ -60,13 +60,8 @@ class DatastoreGrpc(val datastore: DatastoreHelper)(
       }
   }
 
-  private[datastore] def get(keys: Option[Seq[Key]], kind: String): Future[Seq[Entity]] = {
-    val keyResolved = keys match {
-      case Some(keyList) => keyList
-      case None          => Seq.empty[Key]
-    }
-
-    datastore.client.lookup(LookupRequest(datastore.datastoreConfig.projectId, None, keyResolved)).map { response =>
+  private[datastore] def get(keys: Seq[Key]): Future[Seq[Entity]] = {
+    datastore.client.lookup(LookupRequest(datastore.datastoreConfig.projectId, None, keys)).map { response =>
       response.found.map(_.getEntity)
     }
   }

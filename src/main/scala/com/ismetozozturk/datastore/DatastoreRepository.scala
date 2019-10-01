@@ -43,18 +43,18 @@ class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: Dat
   }
 
   def list(kind: String): Future[Seq[E]] = {
-    datastoreGrpc.get(None, kind).map(entities => entities.map(datastoreEntityToInstance[E]))
+    datastoreGrpc.get(Seq(createKey(None, kind))).map(entities => entities.map(datastoreEntityToInstance[E]))
   }
 
-//  def get(id: String) = {
-//    val datastoreEntities = entities.map(instanceToDatastoreEntity[E])
-//    datastoreGrpc.update(datastoreEntities).map(_ => entities)
-//  }
-//
-//  def getMany(ids: Seq[String]) = {
-//    val datastoreEntities = entities.map(instanceToDatastoreEntity[E])
-//    datastoreGrpc.update(datastoreEntities).map(_ => entities)
-//  }
+  def get(id: Any, kind: String): Future[Seq[E]] = {
+    datastoreGrpc.get(Seq(createKey(Some(id), kind))).map(entities => entities.map(datastoreEntityToInstance[E]))
+  }
+
+  def getMany(ids: Seq[Any], kind: String): Future[Seq[E]] = {
+    datastoreGrpc
+      .get(ids.map(id => createKey(Some(id), kind)))
+      .map(entities => entities.map(datastoreEntityToInstance[E]))
+  }
 
   def runQuery(query: Query) = {}
 

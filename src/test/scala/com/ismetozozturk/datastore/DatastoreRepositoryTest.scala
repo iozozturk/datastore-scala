@@ -26,7 +26,7 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
   when(mockDatastoreGrpc.delete(any[Seq[Entity]])) thenReturn Future {
     CommitResponse(Seq(MutationResult(fixture.userEntity.key)))
   }
-  when(mockDatastoreGrpc.get(any[Option[Seq[Key]]], any[String])) thenReturn Future {
+  when(mockDatastoreGrpc.get(any[Seq[Key]])) thenReturn Future {
     Seq(fixture.userEntity)
   }
 
@@ -60,6 +60,18 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
 
     "list objects" in {
       Await.result(datastoreRepositoryInTest.list(fixture.user.kind), 3.second) shouldEqual Seq(fixture.user)
+    }
+
+    "get objects" in {
+      Await.result(datastoreRepositoryInTest.get(fixture.user.id, fixture.user.kind), 3.second) shouldEqual Seq(
+        fixture.user
+      )
+    }
+
+    "get many objects" in {
+      Await.result(datastoreRepositoryInTest.getMany(Seq(fixture.user.id), fixture.user.kind), 3.second) shouldEqual Seq(
+        fixture.user
+      )
     }
 
   }
