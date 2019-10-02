@@ -1,6 +1,5 @@
 package com.ismetozozturk.datastore
 
-import com.google.datastore.v1.Key
 import com.google.datastore.v1.Query
 
 import scala.concurrent.ExecutionContext
@@ -52,6 +51,8 @@ class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: Dat
       .map(entities => entities.map(datastoreEntityToInstance[E]))
   }
 
-  def runQuery(query: Query) = {}
+  def runQuery(query: Query): Future[Seq[E]] = {
+    datastoreGrpc.runQuery(query).map(entities => entities.map(datastoreEntityToInstance[E]))
+  }
 
 }

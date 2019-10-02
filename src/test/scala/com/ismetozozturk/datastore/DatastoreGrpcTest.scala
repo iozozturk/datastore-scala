@@ -12,9 +12,14 @@ import com.google.datastore.v1.DatastoreClient
 import com.google.datastore.v1.Entity
 import com.google.datastore.v1.EntityResult
 import com.google.datastore.v1.Key
+import com.google.datastore.v1.KindExpression
 import com.google.datastore.v1.LookupRequest
 import com.google.datastore.v1.LookupResponse
 import com.google.datastore.v1.MutationResult
+import com.google.datastore.v1.Query
+import com.google.datastore.v1.QueryResultBatch
+import com.google.datastore.v1.RunQueryRequest
+import com.google.datastore.v1.RunQueryResponse
 import com.google.datastore.v1.Value
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -48,6 +53,9 @@ class DatastoreGrpcTest extends WordSpec with MockitoSugar with Matchers {
   when(mockDatastoreClient.lookup(any[LookupRequest])) thenReturn Future {
     LookupResponse(found = Seq(EntityResult(Some(repoFixture.userEntity))))
   }
+  when(mockDatastoreClient.runQuery(any[RunQueryRequest])) thenReturn Future {
+    RunQueryResponse(Some(QueryResultBatch(entityResults = Seq(EntityResult(Some(repoFixture.userEntity))))))
+  }
 
   private val datastoreGrpcInTest = new DatastoreGrpc(mockDatastoreHelper)
 
@@ -72,6 +80,12 @@ class DatastoreGrpcTest extends WordSpec with MockitoSugar with Matchers {
 
     "get entity from datastore" in {
       Await.result(datastoreGrpcInTest.get(Seq(grpcFixture.userKey)), 3.second) shouldEqual Seq(repoFixture.userEntity)
+    }
+
+    "query entities from datastore" in {
+      Await.result(datastoreGrpcInTest.runQuery(Query(kind = Seq(KindExpression(grpcFixture.user.kind)))), 3.second) shouldEqual Seq(
+        repoFixture.userEntity
+      )
     }
   }
 }

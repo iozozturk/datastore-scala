@@ -66,6 +66,12 @@ class DatastoreGrpc(val datastore: DatastoreHelper)(
     }
   }
 
-  private[datastore] def runQuery(query: Query) = {}
+  private[datastore] def runQuery(query: Query) = {
+    datastore.client
+      .runQuery(RunQueryRequest(datastore.datastoreConfig.projectId).withQuery(query))
+      .map { response =>
+        response.getBatch.entityResults.map(_.getEntity)
+      }
+  }
 
 }

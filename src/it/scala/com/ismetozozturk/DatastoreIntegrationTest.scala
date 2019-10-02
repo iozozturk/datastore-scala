@@ -2,6 +2,8 @@ package com.ismetozozturk
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.google.datastore.v1.KindExpression
+import com.google.datastore.v1.Query
 import com.ismetozozturk.datastore._
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.PatienceConfiguration
@@ -79,6 +81,12 @@ class DatastoreIntegrationTest extends WordSpec with Matchers {
       val users = Seq(IntegrationUser("user-to-find-many", 26), IntegrationUser("user-to-find-many-1", 26))
       Await.result(repositoryInTest.insertMany(users), 3.second)
       Await.result(repositoryInTest.getMany(Seq(users.head.id, users.tail.head.id), users.head.kind), 3.second) shouldEqual users
+    }
+
+    "query entities from datastore" in {
+      val users = Seq(IntegrationUser("user-to-query", 26), IntegrationUser("user-to-query-1", 27))
+      Await.result(repositoryInTest.insertMany(users), 3.second)
+      Await.result(repositoryInTest.runQuery(Query(kind = Seq(KindExpression(users.head.kind)))), 3.second) contains users
     }
 
   }

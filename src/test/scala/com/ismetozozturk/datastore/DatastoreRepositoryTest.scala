@@ -29,6 +29,9 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
   when(mockDatastoreGrpc.get(any[Seq[Key]])) thenReturn Future {
     Seq(repoFixture.userEntity)
   }
+  when(mockDatastoreGrpc.runQuery(any[Query])) thenReturn Future {
+    Seq(repoFixture.userEntity)
+  }
 
   val datastoreRepositoryInTest = new DatastoreRepository[repoFixture.User](mockDatastoreGrpc)
 
@@ -70,6 +73,15 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
 
     "get many objects" in {
       Await.result(datastoreRepositoryInTest.getMany(Seq(repoFixture.user.id), repoFixture.user.kind), 3.second) shouldEqual Seq(
+        repoFixture.user
+      )
+    }
+
+    "query objects" in {
+      Await.result(
+        datastoreRepositoryInTest.runQuery(Query(kind = Seq(KindExpression(repoFixture.user.kind)))),
+        3.second
+      ) shouldEqual Seq(
         repoFixture.user
       )
     }
