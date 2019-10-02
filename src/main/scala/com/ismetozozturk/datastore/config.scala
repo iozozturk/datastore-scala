@@ -1,12 +1,11 @@
 package com.ismetozozturk.datastore
 
-import akka.actor.ActorSystem
 import com.typesafe.config.Config
 
 case class DatastoreConfig(projectId: String, environment: Environment, parallelism: Int)
 
 object DatastoreConfig {
-  def apply(config: Config)(implicit actorSystem: ActorSystem): DatastoreConfig = {
+  def apply(config: Config): DatastoreConfig = {
     new DatastoreConfig(
       config.getString("gcp-project.project-id"),
       Environment(config),
@@ -16,10 +15,10 @@ object DatastoreConfig {
 }
 
 object Environment {
-  def apply(config: Config)(implicit system: ActorSystem): Environment = {
+  def apply(config: Config): Environment = {
     config.getString("environment") match {
       case "prod" => PROD
-      case _ => DEV
+      case _      => DEV
     }
   }
 }

@@ -1,6 +1,9 @@
 package com.ismetozozturk.datastore
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.google.datastore.v1.Query
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -55,4 +58,13 @@ class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: Dat
     datastoreGrpc.runQuery(query).map(entities => entities.map(datastoreEntityToInstance[E]))
   }
 
+}
+
+object DatastoreRepository {
+  def apply[E <: BaseEntity: TypeTag: ClassTag]()(
+    implicit ec: ExecutionContext,
+    materializer: ActorMaterializer,
+    actorSystem: ActorSystem
+  ) =
+    new DatastoreRepository[E](new DatastoreGrpc(new DatastoreHelper(DatastoreConfig(ConfigFactory.load))))
 }

@@ -5,12 +5,11 @@ import akka.stream.ActorMaterializer
 import com.google.datastore.v1.KindExpression
 import com.google.datastore.v1.Query
 import com.ismetozozturk.datastore._
-import com.typesafe.config.ConfigFactory
+import org.scalatest.Matchers
+import org.scalatest.WordSpec
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.Seconds
 import org.scalatest.time.Span
-import org.scalatest.Matchers
-import org.scalatest.WordSpec
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,13 +19,9 @@ class DatastoreIntegrationTest extends WordSpec with Matchers {
   private implicit val actorSystem: ActorSystem = ActorSystem()
   private implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  private val config = ConfigFactory.load
-  private val datastoreConfig = DatastoreConfig(config)
-  private val datastoreHelper = new DatastoreHelper(datastoreConfig)
-  private val datastoreGrpc = new DatastoreGrpc(datastoreHelper)
   private implicit val patience: PatienceConfiguration.Timeout = PatienceConfiguration.Timeout(Span(3, Seconds))
 
-  private val repositoryInTest = new DatastoreRepository[IntegrationUser](datastoreGrpc)
+  private val repositoryInTest = DatastoreRepository[IntegrationUser]()
 
   "Datastore repository" should {
 
