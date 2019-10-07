@@ -1,6 +1,7 @@
 package com.ismetozozturk.datastore
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.stream.Materializer
 import com.google.datastore.v1.CommitRequest.TransactionSelector
 import com.google.datastore.v1.Mutation.Operation
@@ -14,6 +15,7 @@ class DatastoreGrpc(val datastore: DatastoreHelper)(
   actorSystem: ActorSystem,
   materializer: Materializer
 ) {
+  val logger = Logging(actorSystem.eventStream, "datastore-grpc")
 
   private[datastore] def insert(entities: Seq[Entity]): Future[CommitResponse] = {
     datastore.client

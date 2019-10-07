@@ -1,5 +1,7 @@
 package com.ismetozozturk.datastore
 
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import com.google.datastore.v1.Key.PathElement
 import com.google.datastore.v1.Key.PathElement.IdType
 import com.google.datastore.v1._
@@ -17,6 +19,9 @@ import scala.concurrent.Future
 
 class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
   private val mockDatastoreGrpc = mock[DatastoreGrpc]
+
+  private implicit val actorSystem: ActorSystem = ActorSystem()
+  private implicit val materializer: ActorMaterializer = ActorMaterializer()
   when(mockDatastoreGrpc.insert(any[Seq[Entity]])) thenReturn Future {
     CommitResponse(Seq(MutationResult(repoFixture.userEntity.key)))
   }
@@ -84,6 +89,12 @@ class DatastoreRepositoryTest extends WordSpec with MockitoSugar with Matchers {
       ) shouldEqual Seq(
         repoFixture.user
       )
+    }
+    "health check" in {
+      Await.result(
+        datastoreRepositoryInTest.healthCheck(),
+        3.second
+      ) shouldEqual true
     }
 
   }

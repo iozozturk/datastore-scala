@@ -1,6 +1,6 @@
 name := "datastore-scala"
 
-version := "0.1.2"
+version := "0.1.3"
 
 scalaVersion := "2.13.0"
 

@@ -1,6 +1,7 @@
 package com.ismetozozturk.datastore
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.stream.ActorMaterializer
 import com.google.datastore.v1.Query
 import com.typesafe.config.ConfigFactory
@@ -11,8 +12,11 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: DatastoreGrpc)(
-  implicit ec: ExecutionContext
+  implicit ec: ExecutionContext,
+  actorSystem: ActorSystem
 ) extends EntityResolver {
+
+  val logger = Logging(actorSystem.eventStream, "datastore-grpc")
 
   def insert(entity: E): Future[E] = {
     val datastoreEntity = instanceToDatastoreEntity[E](entity)
@@ -56,6 +60,14 @@ class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: Dat
 
   def runQuery(query: Query): Future[Seq[E]] = {
     datastoreGrpc.runQuery(query).map(entities => entities.map(datastoreEntityToInstance[E]))
+  }
+
+  def healthCheck(): Future[Boolean] = {
+    datastoreGrpc.runQuery(Query()).map(_ => true).recover {
+      case e: RuntimeException =>
+        logger.error("health check failed", e)
+        false
+    }
   }
 
 }

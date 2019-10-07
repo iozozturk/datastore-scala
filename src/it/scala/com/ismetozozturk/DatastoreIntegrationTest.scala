@@ -84,6 +84,10 @@ class DatastoreIntegrationTest extends WordSpec with Matchers {
       Await.result(repositoryInTest.runQuery(Query(kind = Seq(KindExpression(users.head.kind)))), 3.second) contains users
     }
 
+    "health check datastore" in {
+      Await.result(repositoryInTest.healthCheck(), 3.second) shouldEqual true
+    }
+
   }
 
 }
