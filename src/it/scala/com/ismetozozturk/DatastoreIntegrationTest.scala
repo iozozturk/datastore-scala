@@ -92,7 +92,4 @@ case class IntegrationUser(name: String, age: Int) extends BaseEntity {
   override def id: Any = name
 
   override def kind: String = "users"
-
-  override def excludeFromIndex: Boolean = false
-
 }

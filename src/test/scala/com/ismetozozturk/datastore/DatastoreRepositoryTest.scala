@@ -96,8 +96,6 @@ object repoFixture {
     override def id: Any = name
 
     override def kind: String = "users"
-
-    override def excludeFromIndex: Boolean = false
   }
 
   val user = User("ismet", 35)
