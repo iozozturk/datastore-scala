@@ -16,7 +16,7 @@ True asynchronous and non-blocking Scala client library for Google Cloud Datasto
 
 Current implementations of Google Cloud Datastore Java client library and other custom implementations found on Github
  are synchronous and blocking. This creates performance issues at scale. This library use Datastore Proto files and gRPC 
- as backend so that all communication layer is async and return `Future`s. Also relevant Datastore classes are created from 
+ as backend so that all communication layer is async and return `Future`. Also relevant Datastore classes are created from 
  official Google Cloud Datastore Proto files to be consistent and provides easy migration in future.
  
 ## Usage
@@ -78,9 +78,9 @@ Integration test setup include datastore emulator as well. To run integration te
 `sbt 'dockerComposeTest it:test'`
 
 ## TODO
-[] excludeFromIndex support
-[] transactional and non-transactional commit support
-[] handle array types
-[] travis build, test
-[] support for auto generated ids, currently only custom keys supported
-[] get rid of default instance creation, blocks require statements in classes
+- excludeFromIndex support
+- transactional and non-transactional commit support
+- handle array types
+- travis build, test
+- support for auto generated ids, currently only custom keys supported
+- get rid of default instance creation, blocks require statements in classes
