@@ -2,14 +2,13 @@ package com.ismetozozturk.datastore
 
 import com.typesafe.config.Config
 
-case class DatastoreConfig(projectId: String, environment: Environment, parallelism: Int)
+case class DatastoreConfig(projectId: String, environment: Environment)
 
 object DatastoreConfig {
   def apply(config: Config): DatastoreConfig = {
     new DatastoreConfig(
-      config.getString("gcp-project.project-id"),
-      Environment(config),
-      config.getInt("gcp-project.datastore-parallelism")
+      config.getString("gcp-project-id"),
+      Environment(config)
     )
   }
 }
