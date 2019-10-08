@@ -19,8 +19,8 @@ Current implementations of Google Cloud Datastore Java client library and other 
  as backend so that all communication layer is async and return `Future`. Also relevant Datastore classes are created from 
  official Google Cloud Datastore Proto files to be consistent and provides easy migration in future.
  
-## Usage
-Simply add library as a dependency.
+## Usage (Work in Progress)
+Simply add library as a dependency. (Not published yet)
 ```
 libraryDependencies ++= Seq(
   "com.ismetozozturk" %% "datastore-scala" % "0.1.3"
