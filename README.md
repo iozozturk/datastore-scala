@@ -23,7 +23,7 @@ Current implementations of Google Cloud Datastore Java client library and other 
 Simply add library as a dependency.
 ```
 libraryDependencies ++= Seq(
-  "com.ismetozozturk" %% "datastore-scala" % "0.1.3"
+  "com.ismetozozturk" %% "datastore-scala" % "0.1.4"
 )
 ```
 
