@@ -23,7 +23,7 @@ class DatastoreHelper(val datastoreConfig: DatastoreConfig)(
     )
   )
 
-  var client: DatastoreClient =
+  val client: DatastoreClient =
     if (datastoreConfig.environment == DEV) {
       DatastoreClient(GrpcClientSettings.fromConfig("datastore-grpc").withTls(false))
     } else {

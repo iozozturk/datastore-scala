@@ -3,7 +3,13 @@ package com.ismetozozturk.datastore
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.stream.ActorMaterializer
+import com.google.datastore.v1.Filter.FilterType
+import com.google.datastore.v1.PropertyFilter.Operator
+import com.google.datastore.v1.Filter
+import com.google.datastore.v1.PropertyFilter
+import com.google.datastore.v1.PropertyReference
 import com.google.datastore.v1.Query
+import com.google.datastore.v1.Value
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.ExecutionContext
@@ -63,11 +69,14 @@ class DatastoreRepository[E <: BaseEntity: TypeTag: ClassTag](datastoreGrpc: Dat
   }
 
   def healthCheck(): Future[Boolean] = {
-    datastoreGrpc.runQuery(Query()).map(_ => true).recover {
-      case e: RuntimeException =>
-        logger.error("health check failed", e)
-        false
-    }
+    datastoreGrpc
+      .runQuery(Query().withLimit(1))
+      .map(_ => true)
+      .recover {
+        case e: RuntimeException =>
+          logger.error("health check failed", e)
+          false
+      }
   }
 
 }
